@@ -1,3 +1,16 @@
 ul.list-group {
   min-height: 130px;
 }
+.m-5 {
+  margin: rem!important;}
+
+.justify-content-around {
+  justify-content: space-around!important;
+}
+.row{
+  display: flex;
+  flex-wrap: wrap;
+}
+*::after, ::before {
+  box-sizing: border-box;
+}
