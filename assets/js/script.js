@@ -12,7 +12,8 @@ var createTask = function(taskText, taskDate, taskList) {
 
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
-
+//check due date
+auditTask(taskLi);
 
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
@@ -65,7 +66,8 @@ $("#task-form-modal .btn-primary").click(function() {
   // get form values
   var taskText = $("#modalTaskDescription").val();
   var taskDate = $("#modalDueDate").val();
-
+  $("#modalDueDate").datepicker({minDate:1
+  });
   if (taskText && taskDate) {
     createTask(taskText, taskDate, "toDo");
 
@@ -83,6 +85,7 @@ $("#task-form-modal .btn-primary").click(function() {
 });
 
 // remove all tasks
+$("main").draggable();
 $("#remove-tasks").on("click", function() {
   for (var key in tasks) {
     tasks[key].length = 0;
@@ -91,5 +94,92 @@ $("#remove-tasks").on("click", function() {
   saveTasks();
 });
 
+
 // load tasks for the first time
 loadTasks();
+
+$(".card .list-group").sortable({connectWith: $(".card .list-group"),
+scroll: false,
+tolerance: "pointer",
+helper: "clone",
+activate: function(event) {console.log("activate", this);
+},
+deactivate: function(event){console.log("deactivate", this);
+},
+over: function(event){console.log("over", event.target);
+},
+out: function(event) {console.log("out", event.target);
+},
+update: function(event){//loop over current set of children in sortable list
+$(this).children().each(function(){ 
+  var text=$(this)
+  .find("p")
+  .text()
+  .trim();
+  
+  var date = $(this)
+  .find("span")
+  .text()
+  .trim();
+  // add task data to the temp array as an object
+  tempArr.push({
+    text: text,
+    date:date
+  });
+  
+});
+  console.log(tempArr);
+}
+});
+//trim down list's ID to match object property
+var arrName = $(this)
+.attr("id")
+.replace("list-", "");
+// update array on tasks object and save
+tasks[arrName] = tempArr;
+saveTasks();
+drop ();{
+  ui.draggable.remove();
+}
+$("trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function (event, ui) {console.log("drop");
+},
+over: function(event, ui){console.log("over");
+},
+out: function(event, ui){ console.log("out");
+}
+})
+var auditTask = function(taskEL){//get date from task element
+  var date = $(taskEl).find("span"). text().trim();
+  //ensure it worked
+  console.log(date);
+  //convert to mement object at 5:00pm
+
+  var time = moment(date, "L"). set ("hour", 17);
+  //remove any old classes from element
+  $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
+  //apply new class if task is near/over due date
+  if(moment().isAfter(time)) {$(taskEL).addClass("list-group-item-danger");
+}
+else if (Math.abs(moment().diff(time,"days")) <= 2) {
+  $(taskEl).addClass("list-group-item-warning");
+}
+}
+$(".list-group").on("change", "input[type='text']", function() {
+  var date=$(this).val();
+  var status = $(this). closest("list-group"). attr("id").replace("list-","");
+  var index=$(this).closest(".list-group-item").index();
+
+  tasks[status][index].date = date;
+  saveTasks();
+  var taskSpan =$("<span>"). addClass("badge badge-primary badge-pill").text(date);
+  $(this).replaceWith(taskSpan);
+
+  // Pass task's <li> element into auditTask()to check new due date
+  auditTask($taskSpan).closest(".list-group-item");
+});
+
+
+
