@@ -183,3 +183,5 @@ $(".list-group").on("change", "input[type='text']", function() {
 
 
 
+setInterval (function(){//code to execute
+},(1000 *60)*30);
